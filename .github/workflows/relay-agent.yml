@@ -1,0 +1,54 @@
+name: Relay agent
+run-name: relay-${{ inputs.run_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:   { required: true }
+      provider: { required: true }
+      branch:   { required: true }
+      title:    { required: true }
+      task:     { required: true }
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # User inputs are passed via env and referenced as shell vars, never
+      # interpolated directly into run: scripts — ${{ inputs.X }} in a run block
+      # would let a crafted ticket break out of the shell.
+      - name: Create branch
+        env:
+          BRANCH: ${{ inputs.branch }}
+        run: git checkout -b "$BRANCH"
+      - name: Write task
+        env:
+          TASK: ${{ inputs.task }}
+        run: printf '%s' "$TASK" > /tmp/relay-task.md
+      - name: Code (Claude)
+        if: inputs.provider == 'anthropic'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: npx -y @anthropic-ai/claude-code -p "$(cat /tmp/relay-task.md)" --permission-mode acceptEdits
+      - name: Code (Codex)
+        if: inputs.provider == 'openai'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx -y @openai/codex exec "$(cat /tmp/relay-task.md)"
+      - name: Commit, push, open PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ inputs.branch }}
+          TITLE: ${{ inputs.title }}
+          RUN_ID: ${{ inputs.run_id }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git config user.name "relay-agent"
+          git config user.email "agent@relay.dev"
+          git add -A
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "$TITLE"
+          git push -u origin "$BRANCH"
+          gh pr create --base "$DEFAULT_BRANCH" --head "$BRANCH" --title "$TITLE" --body "Automated by Relay — run $RUN_ID"
