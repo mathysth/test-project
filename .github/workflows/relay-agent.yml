@@ -43,7 +43,9 @@ jobs:
       - name: Code (Codex)
         if: inputs.provider == 'openai'
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Codex CLI reads CODEX_API_KEY (NOT OPENAI_API_KEY) for non-interactive
+          # api-key auth; with OPENAI_API_KEY it tries ChatGPT OAuth and 401s in CI.
+          CODEX_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MODEL: ${{ inputs.model }}
         run: npx -y @openai/codex exec --json -m "$MODEL" "$(cat /tmp/relay-task.md)" > /tmp/relay-codex.json
       # Normalize whichever provider's output exists into relay-usage.json.
