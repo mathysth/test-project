@@ -58,7 +58,7 @@ jobs:
           cat > /tmp/normalize.mjs <<'EOF'
           import fs from 'node:fs';
           const read = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
-          const out = { provider: process.env.PROVIDER, model: process.env.MODEL, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0, turns: 0, durationMs: 0, costUsd: 0 };
+          const out = { provider: process.env.PROVIDER, model: process.env.MODEL, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0, turns: 0, durationMs: 0, costUsd: 0, result: '' };
           const c = read('/tmp/relay-claude.json');
           if (c) {
             const u = c.usage || {};
@@ -69,12 +69,14 @@ jobs:
             out.turns = c.num_turns || 0;
             out.durationMs = c.duration_ms || 0;
             out.costUsd = c.total_cost_usd || 0;
+            out.result = (c.result || '').slice(0, 8000);
           }
           const o = read('/tmp/relay-codex.json');
           if (o) {
             const u = o.usage || o.token_usage || {};
             out.inputTokens = u.input_tokens || u.prompt_tokens || 0;
             out.outputTokens = u.output_tokens || u.completion_tokens || 0;
+            out.result = (o.result || o.output_text || o.message || '').slice(0, 8000);
           }
           fs.writeFileSync('/tmp/relay-usage.json', JSON.stringify(out));
           EOF
