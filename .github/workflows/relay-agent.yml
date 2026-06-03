@@ -16,7 +16,10 @@ permissions:
 jobs:
   agent:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ inputs.timeout_minutes }}
+    # workflow_dispatch inputs arrive as strings; timeout-minutes needs a number.
+    # fromJSON("20") -> 20, which GitHub's workflow validator accepts (a bare
+    # ${{ inputs.timeout_minutes }} is a string and fails parse: "workflow file issue").
+    timeout-minutes: ${{ fromJSON(inputs.timeout_minutes) }}
     steps:
       - uses: actions/checkout@v4
       # User inputs are passed via env and referenced as shell vars, never
