@@ -88,7 +88,10 @@ jobs:
           path: /tmp/relay-usage.json
           if-no-files-found: ignore
       # Push only — Relay opens the PR with the user's OAuth token afterwards.
+      # if: always() so partial work survives a failing agent step (e.g. the
+      # turn cap is hit mid-task): the branch is pushed and a re-run continues it.
       - name: Commit and push
+        if: always()
         env:
           BRANCH: ${{ inputs.branch }}
           TITLE: ${{ inputs.title }}
