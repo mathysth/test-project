@@ -1,0 +1,33 @@
+{
+  "$schema": "https://turbo.build/json-schema.json",
+  "globalEnv": [
+    "NODE_ENV"
+  ],
+  "pipeline": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "outputs": [
+        "dist/**",
+        ".next/**"
+      ],
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "lint": {
+      "outputs": [],
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "type-check": {
+      "outputs": [],
+      "dependsOn": [
+        "^build"
+      ]
+    }
+  }
+}

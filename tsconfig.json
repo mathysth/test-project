@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": [
+      "ES2020"
+    ],
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": [
+        "packages/shared/src/*"
+      ],
+      "@ui/*": [
+        "packages/ui/src/*"
+      ],
+      "@api/*": [
+        "apps/api/src/*"
+      ],
+      "@web/*": [
+        "apps/web/src/*"
+      ]
+    }
+  }
+}
