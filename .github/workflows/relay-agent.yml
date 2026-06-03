@@ -24,10 +24,11 @@ jobs:
       - uses: actions/checkout@v4
       # User inputs are passed via env and referenced as shell vars, never
       # interpolated directly into run: scripts.
-      - name: Create branch
+      - name: Create or continue branch
         env:
           BRANCH: ${{ inputs.branch }}
-        run: git checkout -b "$BRANCH"
+        run: |
+          git fetch origin "$BRANCH" 2>/dev/null && git checkout "$BRANCH" || git checkout -b "$BRANCH"
       - name: Write task
         env:
           TASK: ${{ inputs.task }}
